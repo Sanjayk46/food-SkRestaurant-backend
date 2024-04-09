@@ -18,7 +18,8 @@ const PORT = process.env.PORT||8000;
 dotenv.config();
 const app = express();
 app.use(cors({ // Use cors as a function
-        origin: 'http://localhost:3000',
+        //origin: 'http://localhost:3000',
+        origin:'https://food-app-skrestaurant.netlify.app',
         optionsSuccessStatus: 200
       }));
       
