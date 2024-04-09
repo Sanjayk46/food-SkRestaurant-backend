@@ -1,21 +1,27 @@
-const UNAUTHORIZED = 400;
-const authMiddleware = require("./auth");
-const admin = (req, res, next) => {
-  authMiddleware(req,res=>{
-  const user = req.user;
-  if (!user || typeof user.isAdmin === 'undefined') {
-    // If user is not defined or isAdmin property is not defined, return unauthorized
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+const { verify } = require('jsonwebtoken');
+const UNAUTHORIZED = 401;
 
-  // Check if user is an admin
-  if (!user.isAdmin) {
-    // If user is not an admin, return unauthorized
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-});
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(UNAUTHORIZED).send({
+            message: "Invalid authorization header format"
+        });
+    }
 
-  // If user is an admin, proceed to the next middleware
-  next();
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const decoded = verify(token, process.env.JWT_SECRET); // Assuming jwt is imported
+        req.user = decoded;
+        next(); // Call next middleware
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            message: error.message
+        });
+    }
 };
-module.exports = {admin,authMiddleware};
+
+module.exports = authMiddleware;
