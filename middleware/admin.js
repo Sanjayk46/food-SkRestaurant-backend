@@ -5,13 +5,13 @@ const admin = (req, res, next) => {
   const user = req.user;
   if (!user || typeof user.isAdmin === 'undefined') {
     // If user is not defined or isAdmin property is not defined, return unauthorized
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(UNAUTHORIZED).json({ error: 'Unauthorized' });
   }
 
   // Check if user is an admin
   if (!user.isAdmin) {
     // If user is not an admin, return unauthorized
-    return res.statu(403).json({ error: 'Forbidden' });
+    return res.status(UNAUTHORIZED).json({ error: 'Forbidden' });
   }
 });
 
