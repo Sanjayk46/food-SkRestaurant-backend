@@ -35,13 +35,14 @@ const authMiddleware = (req, res, next) => {
     try {
         const decoded = verify(token, process.env.JWT_SECRET); // Assuming jwt is imported
         req.user = decoded;
-       // next(); // Call next middleware
+         // Call next middleware
     } catch (error) {
         console.log(error);
         return res.status(500).send({
             message: error.message
         });
     }
+    return next();
 };
 
 module.exports = authMiddleware;
