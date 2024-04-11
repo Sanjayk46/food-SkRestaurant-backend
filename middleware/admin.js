@@ -1,9 +1,9 @@
-const  UNAUTHORIZED =400; 
+const  UNAUTHORIZED = 400; 
 const authMiddleware = require('./auth');
 
 const admin = (req, res,next) => {
   // Call the authMiddleware to authenticate the user
-  authMiddleware(req, res => {
+  authMiddleware(req, res, () => {
     const user = req.user;
     if (!user || typeof user.isAdmin === 'undefined') {
       // If user is not defined or isAdmin property is not defined, return unauthorized
