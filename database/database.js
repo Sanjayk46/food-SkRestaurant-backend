@@ -8,6 +8,7 @@ const {samplefoods} = require('../data');
 const dbConnection = async ()=>{
     try {
         await mongoose.connect("mongodb+srv://sanjayks8046:Iahdd45uAymNkIEM@zendb.kv2hnw1.mongodb.net/");
+        //mongodb+srv://sanjayks8046:Iahdd45uAymNkIEM@zendb.kv2hnw1.mongodb.net/
         
         await seedFoods();
         await seedusers();
@@ -20,7 +21,7 @@ const dbConnection = async ()=>{
 
 async function seedusers() {
     const usersCount = await userModel.countDocuments();
-    console.log(usersCount);
+   // console.log(usersCount);
   if (usersCount > 0) {
     console.log('users seed is already done!');
     return;
@@ -36,7 +37,7 @@ async function seedusers() {
 
 async function seedFoods() {
   const foodsCount = await foodModel.countDocuments();
-  console.log(foodsCount);
+  //console.log(foodsCount);
   if (foodsCount > 0) {
     console.log('foods seed is already done!');
     return;

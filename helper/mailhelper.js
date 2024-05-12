@@ -24,7 +24,6 @@ const transporter  =nodemailer.createTransport({
     pass: process.env.USER_PASS,
   },
 });
-//console.log(user.email);
   const mailOptions = {
     from:'narutohinata101999@gmail.com',
     to:order.user.email,
@@ -60,7 +59,7 @@ const getReceiptHtml = function (order) {
     </head>
     <body>
       <h1>Order Payment Confirmation</h1>
-      <p>Dear ${order.name},</p>
+      <p>Dear ${order.fistName} ${order.lastName},</p>
       <p>Thank you for choosing us! Your order has been successfully paid and is now being processed.</p>
       <p><strong>Tracking ID:</strong> ${order.id}</p>
       <p><strong>Order Date:</strong> ${order.createdAt

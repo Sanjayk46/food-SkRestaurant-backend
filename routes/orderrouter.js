@@ -2,20 +2,20 @@ const express = require('express');
 const authMiddleware = require('../middleware/auth');
 const handler =require ('express-async-handler');
 const {orderModel} = require('../database/orderModel');
- const {userModel} = require('../database/userModel');
+const {userModel} = require('../database/userModel');
 const OrderStatus = require('../constants/orderstatus');
 const sendEmailReceipt = require('../helper/mailhelper');
+const { admin } = require('../middleware/admin');
 const BAD_REQUEST= 400;
 const UNAUTHORIZED = 401;
 const router = express.Router();
 router.use(authMiddleware);
 
 router.post(
-  '/create',
-  handler(async (req, res) => {
+  '/create',async (req, res) => {
     const order = req.body;
     if (order.items.length <= 0) res.status(BAD_REQUEST).send('Cart Is Empty!');
-    // console.log(OrderStatus);
+     
     await orderModel.deleteOne({
       user: req.user.id,
       status: OrderStatus.NEW,
@@ -25,8 +25,8 @@ router.post(
     // console.log(newOrder);
     await newOrder.save();
     res.send(newOrder);
-  })
-);
+  });
+
 router.put(
   '/pay',
   handler(async (req, res) => {
@@ -83,6 +83,44 @@ router.get('/allstatus',async(req, res) => {
   res.send(allStatus);
 });
 
+router.put('/:id', admin, handler (async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+      const order = await orderModel.findById(id);
+      if (!order) {
+          return res.status(404).json({ message: 'Order not found' });
+      }
+
+      // Validating the new status
+      if (status !== 'SHIPPED' && status !== 'CANCELED' && status !== 'REFUNDED') {
+          return res.status(400).json({ message: 'Invalid status' });
+      }
+
+      // Update the order status
+      order.status = status;
+      await order.save();
+
+      res.json(order);
+  } catch (error) {
+      res.status(500).json({ message: error.message });
+  }
+}));
+router.get(
+  '/orderlist',admin,handler(async (req, res) => {
+    try {
+      const foods = await orderModel.find({});
+      console.log(foods);
+    res.send(foods);
+    } catch (error) {
+      res.status(500).send({
+        message:"Internal Server Error",
+        error:error.message
+    })
+    }
+  })
+);
 router.get(
   '/:status?',
   handler(async (req, res) => {
@@ -104,7 +142,7 @@ const getNewOrderForCurrentUser = async (req) => {
       user: req.user.id,
       status: OrderStatus.NEW,
     }).populate('user');
-    console.log(order);
+   // console.log(order);
     return order;
 
   } catch (error) {

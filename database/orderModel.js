@@ -27,10 +27,11 @@ OrderItemSchema.pre('validate', function(next){
 });
 
 const orderSchema = new Schema(
-    {
-        name: { type: String, required: true },
+    {   
+        firstName:{ type: String },
+        lastName: { type: String },
         address: { type: String, required: true },
-        addressLatLng: { type: LatLngSchema, required: true },
+        addressLatLng: { type: LatLngSchema },
         paymentId: { type: String },
         totalPrice: { type: Number, required: true },
         items: { type: [OrderItemSchema], required: true },

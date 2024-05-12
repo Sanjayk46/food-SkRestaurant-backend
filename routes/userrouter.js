@@ -5,6 +5,7 @@ const authMiddleware = require('../middleware/auth');
 const {admin} = require('../middleware/admin');
 const jwt  = require ('jsonwebtoken');
 const handler =require ('express-async-handler');
+const nodemailer = require('nodemailer');
 const bcrypt =require ('bcryptjs');
 const PASSWORD_HASH_SALT_ROUNDS = 10;
 const BAD_REQUEST = 400;
@@ -26,7 +27,7 @@ router.post(
 router.post(
   '/register',
   handler(async (req, res) => {
-    const { name, email, password, address } = req.body;
+    const { firstName,lastName, email, password, address } = req.body;
 
     const user = await userModel.findOne({ email });
 
@@ -41,7 +42,8 @@ router.post(
     );
 
     const newUser = {
-      name,
+      firstName,
+      lastName,
       email: email.toLowerCase(),
       password: hashedPassword,
       address,
@@ -56,17 +58,103 @@ router.put(
   '/updateProfile',
   authMiddleware,
   handler(async (req, res) => {
-    const { name, address } = req.body;
+    const { firstName, lastName,address } = req.body;
     const user = await userModel.findByIdAndUpdate(
       req.user.id,
-      { name, address },
+      { firstName, lastName, address },
       { new: true }
     );
 
     res.send(generateTokenResponse(user));
   })
 );
+router.post('/forgotPassword',handler(async (req, res)=>{
+  const { email } = req.body;
+  try {
+    let user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const generateOTP = () => {
+      const characters = "0123456789";
+      return Array.from(
+        { length: 6 },
+        () => characters[Math.floor(Math.random() * characters.length)]
+      ).join("");
+    };
 
+    const OTP = generateOTP();
+    user.resetPasswordOtp = OTP;
+    user.resetPasswordExpires = Date.now() + 3600000;
+    await user.save();
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.USER_MAILER,
+        pass: process.env.USER_PASS,
+      },
+    });
+    //${user.firstName} ${user.lastName},
+    const mailOptions = {
+      from: "narutohinata101999@gmail.com",
+      to: user.email,
+      subject: "Password Reset",
+      html: `
+        <p>Dear ${user.firstName} ${user.lastName},</p>
+        <p>We received a request to reset your password. Here is your One-Time Password (OTP): <strong>${OTP}</strong></p>
+        <p>Please click the following link to reset your password:</p>
+        <a href="http://localhost:3000/reset-password">Reset Password</a>
+        <p>If you did not make this request, please ignore this email.</p>
+        <p>Thank you,</p>
+        <p>From Validation</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: "Password reset email sent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+}));
+
+router.post('/resetPassword',handler(async(req,res)=>{
+  try {
+    const { OTP, password } = req.body;
+
+    const user = await userModel.findOne({
+      resetPasswordOtp: OTP,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      const message = user ? "OTP has expired" : "Invalid OTP";
+      return res.status(404).json({ message });
+    }
+    const expirationTime = Date.now() + (5 * 60 * 1000); // 5 minutes in milliseconds
+      
+    // Update the user's resetPasswordExpires field with the new expiration time
+    user.resetPasswordExpires = expirationTime;
+    const hashedPassword = await bcrypt.hash(
+      password,
+      PASSWORD_HASH_SALT_ROUNDS
+    );
+    user.password = hashedPassword;
+    user.resetPasswordOtp = null;
+    user.resetPasswordExpires = null;
+
+    await user.save();
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}));
 router.put(
   '/changePassword',
   authMiddleware,
@@ -140,9 +228,10 @@ router.get(
 router.put('/update',
 admin,
 handler(async (req, res) => {
-    const { id, name, email, address, isAdmin } = req.body;
+    const { id, firstName, lastName, email, address, isAdmin } = req.body;
     await userModel.findByIdAndUpdate(id, {
-      name,
+      firstName,
+      lastName,
       email,
       address,
       isAdmin,
@@ -168,7 +257,8 @@ const generateTokenResponse = user => {
   return {
     id: user.id,
     email: user.email,
-    name: user.name,
+    firstName: user.firstName,
+    lastName: user.lastName,
     address: user.address,
     isAdmin: user.isAdmin,
     token,
