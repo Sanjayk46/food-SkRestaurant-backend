@@ -104,7 +104,7 @@ router.post('/forgotPassword',handler(async (req, res)=>{
         <p>Dear ${user.firstName} ${user.lastName},</p>
         <p>We received a request to reset your password. Here is your One-Time Password (OTP): <strong>${OTP}</strong></p>
         <p>Please click the following link to reset your password:</p>
-        <a href="http://localhost:3000/reset-password">Reset Password</a>
+        <a href="https://skrestaurant-food.netlify.app/reset-password">Reset Password</a>
         <p>If you did not make this request, please ignore this email.</p>
         <p>Thank you,</p>
         <p>From Validation</p>
