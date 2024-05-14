@@ -94,7 +94,7 @@ router.put('/:id', admin, handler (async (req, res) => {
       }
 
       // Validating the new status
-      if (status !== 'SHIPPED' && status !== 'CANCELED' && status !== 'REFUNDED') {
+      if (status !== 'CANCEL' && status !== 'REFUND') {
           return res.status(400).json({ message: 'Invalid status' });
       }
 
