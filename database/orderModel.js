@@ -28,8 +28,8 @@ OrderItemSchema.pre('validate', function(next){
 
 const orderSchema = new Schema(
     {   
-        firstName:{ type: String },
-        lastName: { type: String },
+        firstName:{ type: String,required: true },
+        lastName: { type: String ,required: true},
         address: { type: String, required: true },
         addressLatLng: { type: LatLngSchema },
         paymentId: { type: String },
