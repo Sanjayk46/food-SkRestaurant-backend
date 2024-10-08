@@ -15,9 +15,9 @@ const app = express();
 app.use(cors({ // Use cors as a function
         //origin: 'http://localhost:3000',
        // origin:'https://food-app-skrestaurant.netlify.app',
-        //origin:'https://skrestaurant-food.netlify.app', 
+        origin:'https://skrestaurant-food.netlify.app', 
         //origin:'http://51.20.9.18:3000',
-        origin:'http://food-mern-app.s3-website.eu-north-1.amazonaws.com',
+       // origin:'http://food-mern-app.s3-website.eu-north-1.amazonaws.com',
         optionsSuccessStatus: 200
       }));     
 app.use(express.json());
